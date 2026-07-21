@@ -127,7 +127,7 @@ const login = async (req, res) => {
         id: user.id,
         email: user.email,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "super_secret_jwt_key_987654321a",
       {
         expiresIn: "7d",
       }
