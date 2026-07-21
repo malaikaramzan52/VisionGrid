@@ -38,6 +38,25 @@ app.use("/api/images", imageRoutes);
 // Wishlist Routes
 app.use("/api/wishlist", wishlistRoutes);
 
-app.listen(5000, () => {
-  console.log("Server running on port 5000");
+const path = require("path");
+
+// Serve static frontend files in production if dist exists
+const frontendDistPath = path.join(__dirname, "../frontend/dist");
+app.use(express.static(frontendDistPath));
+
+app.get("*", (req, res) => {
+  if (!req.path.startsWith("/api")) {
+    res.sendFile(path.join(frontendDistPath, "index.html"), (err) => {
+      if (err) {
+        res.status(404).json({ message: "API Endpoint Not Found" });
+      }
+    });
+  } else {
+    res.status(404).json({ message: "API Endpoint Not Found" });
+  }
+});
+
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
