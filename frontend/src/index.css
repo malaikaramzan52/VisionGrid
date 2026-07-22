@@ -1090,6 +1090,10 @@ body {
 
 .toast.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
 
+.mobile-only {
+  display: none !important;
+}
+
 /* ══════════════════════════════════════
    MOBILE
 ══════════════════════════════════════ */
@@ -1112,13 +1116,32 @@ body {
 @media (max-width: 768px) {
   :root { --navbar-h: 64px; }
 
+  .desktop-only {
+    display: none !important;
+  }
+  .mobile-only {
+    display: flex !important;
+  }
+
   .navbar-row { padding: 0 16px; gap: 8px; }
-  .search-wrap { max-width: none; flex: 1; }
-  .search-input { font-size: 13px; }
-  .btn-upload .upload-label { display: none; }
-  .btn-upload { padding: 9px 13px; }
-  .btn-icon { width: 38px; height: 38px; }
   .logo { font-size: 32px; }
+  
+  .mobile-menu-toggle {
+    margin-left: auto;
+  }
+
+  /* Make category button look neat on mobile */
+  .category-dropdown-wrap {
+    display: block !important;
+  }
+  .category-dropdown-btn {
+    min-width: unset;
+    padding: 8px 12px;
+  }
+  .category-dropdown-menu {
+    right: auto;
+    left: 0;
+  }
 
   .gallery-section { padding: 16px 12px 40px; }
   .results-meta { padding: 10px 12px 4px; }
@@ -1127,14 +1150,11 @@ body {
   .masonry-item { margin-bottom: 10px; }
 
   .lightbox-nav { display: none; }
-
-  .nav-auth-btns { gap: 6px; }
-  .btn-auth-outline { padding: 8px 14px; font-size: 12.5px; }
 }
 
 @media (max-width: 600px) {
-  /* Hide category dropdown on small phones - keep nav clean */
-  .category-dropdown-wrap { display: none; }
+  /* Keep category dropdown visible as requested */
+  .category-dropdown-wrap { display: block !important; }
 }
 
 @media (max-width: 480px) {
@@ -1143,10 +1163,153 @@ body {
   .modal-box { padding: 22px 18px; border-radius: 20px; }
   .cat-btn-label { display: none; }
   .btn-icon { width: 36px; height: 36px; }
-  /* Hide sign in text on very small screens */
-  .btn-auth-outline { display: none; }
-  .nav-actions { gap: 6px; }
 }
+
+/* ── Mobile Menu Dropdown Panel ── */
+.mobile-menu {
+  position: absolute;
+  top: var(--navbar-h);
+  left: 16px;
+  right: 16px;
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.16);
+  animation: mobileMenuSlide 0.25s var(--ease-spring);
+  z-index: 999;
+}
+
+@keyframes mobileMenuSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mobile-search-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.mobile-search-wrap .search-icon-el {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.mobile-search-wrap .search-input {
+  width: 100%;
+  padding: 11px 16px 11px 42px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.mobile-search-wrap .search-input:focus {
+  border-color: var(--accent-1);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+.mobile-actions-row {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  gap: 10px;
+}
+
+.mobile-upload-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.mobile-auth-section {
+  width: 100%;
+}
+
+.mobile-auth-buttons {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.mobile-auth-buttons a {
+  flex: 1;
+  text-align: center;
+  justify-content: center;
+}
+
+.mobile-profile-info-box {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 16px;
+  padding: 14px;
+  border: 1px solid var(--border);
+}
+
+.dark .mobile-profile-info-box {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.mobile-user-details {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mobile-profile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+}
+
+.mobile-profile-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13.5px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.mobile-profile-option:hover {
+  background: rgba(13, 148, 136, 0.08);
+  color: var(--accent-1);
+  transform: translateX(2px);
+}
+
+.mobile-profile-option.danger:hover {
+  background: rgba(239, 68, 68, 0.09);
+  color: #ef4444;
+}
+
 
 /* ══════════════════════════════════════
    WISHLIST SIDEBAR & BACKDROP

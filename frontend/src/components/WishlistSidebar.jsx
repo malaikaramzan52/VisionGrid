@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { X, Heart, Download, Trash2, ShoppingBag } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { triggerDirectDownload } from '../utils/downloadUtils';
 
 export default function WishlistSidebar() {
   const { wishlist, removeFromWishlist, wishlistOpen, closeWishlist, incrementDownload } = useApp();
@@ -19,15 +20,8 @@ export default function WishlistSidebar() {
     return () => window.removeEventListener('keydown', handler);
   }, [closeWishlist]);
 
-  const handleDownload = (img) => {
-    const link = document.createElement('a');
-    link.href = img.url;
-    link.download = `${img.title.replace(/\s+/g, '-').toLowerCase()}.jpg`;
-    link.target = '_blank';
-    link.rel = 'noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (img) => {
+    await triggerDirectDownload(img.url, img.title);
     incrementDownload();
   };
 

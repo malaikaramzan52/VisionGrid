@@ -4,6 +4,7 @@ import {
   Search, Upload, Moon, Sun, User, ChevronDown, Check,
   Leaf, Plane, Palette, Cpu, Car, Sparkles, Building2, LayoutGrid,
   UserCircle, Settings, LogOut, Command, Heart, Download,
+  Menu, X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useApp }  from '../context/AppContext';
@@ -45,6 +46,7 @@ export default function Navbar({
 
   const [catOpen,     setCatOpen]     = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [phIdx,       setPhIdx]       = useState(0);
   const [phVisible,   setPhVisible]   = useState(true);
 
@@ -87,6 +89,11 @@ export default function Navbar({
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  /* ── Close mobile menu on page change ── */
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
   const handleCatSelect = useCallback((cat) => {
     onCategory(cat);
     setCatOpen(false);
@@ -94,6 +101,7 @@ export default function Navbar({
 
   const handleLogout = () => {
     setProfileOpen(false);
+    setMobileMenuOpen(false);
     logout();
     navigate('/login', { replace: true });
   };
@@ -104,7 +112,7 @@ export default function Navbar({
   const initials = user?.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'U';
 
   return (
-    <nav className={`navbar${scrolled ? ' scrolled' : ''}`}>
+    <nav className={`navbar${scrolled ? ' scrolled' : ''}${mobileMenuOpen ? ' mobile-menu-active' : ''}`}>
       <div className="navbar-row">
 
         {/* ── Logo ── */}
@@ -112,28 +120,7 @@ export default function Navbar({
           <em>Visiongrid</em>
         </Link>
 
-        {/* ── Search (only on home) ── */}
-        {isHome && (
-          <div className="search-wrap">
-            <Search size={15} className="search-icon-el" />
-            <input
-              ref={searchRef}
-              id="main-search"
-              className="search-input"
-              type="text"
-              placeholder={PLACEHOLDERS[phIdx]}
-              style={{ '--ph-opacity': phVisible ? 1 : 0 }}
-              value={searchQuery}
-              onChange={(e) => onSearch(e.target.value)}
-              aria-label="Search images"
-            />
-            <span className="search-kbd" aria-hidden="true">
-              <Command size={10} />K
-            </span>
-          </div>
-        )}
-
-        {/* ── Category Dropdown (home only) ── */}
+        {/* ── Category Dropdown (home only, visible on both desktop & mobile) ── */}
         {isHome && (
           <div className="category-dropdown-wrap" ref={catRef}>
             <button
@@ -173,11 +160,32 @@ export default function Navbar({
           </div>
         )}
 
-        {/* ── Spacer when not on home ── */}
-        {!isHome && <div style={{ flex: 1 }} />}
+        {/* ── Desktop Search (only on home, hidden on mobile) ── */}
+        {isHome && (
+          <div className="search-wrap desktop-only">
+            <Search size={15} className="search-icon-el" />
+            <input
+              ref={searchRef}
+              id="main-search"
+              className="search-input"
+              type="text"
+              placeholder={PLACEHOLDERS[phIdx]}
+              style={{ '--ph-opacity': phVisible ? 1 : 0 }}
+              value={searchQuery}
+              onChange={(e) => onSearch(e.target.value)}
+              aria-label="Search images"
+            />
+            <span className="search-kbd" aria-hidden="true">
+              <Command size={10} />K
+            </span>
+          </div>
+        )}
 
-        {/* ── Nav actions ── */}
-        <div className="nav-actions">
+        {/* ── Spacer when not on home (desktop only) ── */}
+        {!isHome && <div className="desktop-only" style={{ flex: 1 }} />}
+
+        {/* ── Desktop Nav actions (hidden on mobile) ── */}
+        <div className="nav-actions desktop-only">
 
           {/* Wishlist button with counter */}
           <button
@@ -279,7 +287,128 @@ export default function Navbar({
             </div>
           )}
         </div>
+
+        {/* ── Mobile Hamburger Toggle (3 lines / X) ── */}
+        <button
+          className="btn-icon mobile-only mobile-menu-toggle"
+          onClick={() => setMobileMenuOpen(o => !o)}
+          aria-label="Toggle navigation menu"
+          id="mobile-menu-toggle-btn"
+        >
+          {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+        </button>
       </div>
+
+      {/* ── Mobile Menu Dropdown Panel ── */}
+      {mobileMenuOpen && (
+        <div className="mobile-menu glass-menu" id="mobile-menu-dropdown">
+          {/* Mobile Search (home page only) */}
+          {isHome && (
+            <div className="mobile-search-wrap">
+              <Search size={15} className="search-icon-el" />
+              <input
+                className="search-input"
+                type="text"
+                placeholder={PLACEHOLDERS[phIdx]}
+                value={searchQuery}
+                onChange={(e) => onSearch(e.target.value)}
+                aria-label="Search images"
+              />
+            </div>
+          )}
+
+          {/* Quick Actions (Wishlist, Downloads, Theme Toggle) */}
+          <div className="mobile-actions-row">
+            {/* Wishlist */}
+            <button
+              className="btn-icon nav-counter-btn"
+              onClick={() => {
+                toggleWishlist();
+                setMobileMenuOpen(false);
+              }}
+              aria-label={`Wishlist (${wishlist.length} items)`}
+            >
+              <Heart size={16} />
+              {wishlist.length > 0 && (
+                <span className="nav-counter">{wishlist.length}</span>
+              )}
+            </button>
+
+            {/* Downloads */}
+            <div className="btn-icon nav-counter-btn" aria-label={`${downloadCount} downloads`} title="Downloads">
+              <Download size={16} />
+              {downloadCount > 0 && (
+                <span className="nav-counter dl-counter">{downloadCount}</span>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
+            <button className="btn-icon" onClick={onToggleDark} aria-label="Toggle theme">
+              {darkMode ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+          </div>
+
+          {/* Upload Button (home only) */}
+          {isHome && (
+            <button
+              className="btn-upload mobile-upload-btn"
+              onClick={() => {
+                setMobileMenuOpen(false);
+                if (user) {
+                  onUploadClick();
+                } else {
+                  navigate('/login');
+                }
+              }}
+            >
+              <Upload size={15} />
+              <span>Upload Image</span>
+            </button>
+          )}
+
+          {/* Auth Section */}
+          <div className="mobile-auth-section">
+            {user ? (
+              <div className="mobile-profile-info-box">
+                <div className="mobile-user-details">
+                  <div className="avatar-inner" style={{ width: 38, height: 38 }}>
+                    {user.avatar
+                      ? <img src={user.avatar} alt={user.name} style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:'50%' }} />
+                      : <span style={{ fontSize: 13, fontWeight: 700 }}>{initials}</span>
+                    }
+                  </div>
+                  <div>
+                    <p className="profile-name" style={{ fontSize: 13.5 }}>{user.name}</p>
+                    <p className="profile-status">
+                      <span className="online-dot-sm" />Online
+                    </p>
+                  </div>
+                </div>
+                <div className="profile-divider" />
+                <div className="mobile-profile-links">
+                  <Link to="/profile" className="mobile-profile-option" onClick={() => setMobileMenuOpen(false)}>
+                    <UserCircle size={15} /> Profile
+                  </Link>
+                  <Link to="/settings" className="mobile-profile-option" onClick={() => setMobileMenuOpen(false)}>
+                    <Settings size={15} /> Settings
+                  </Link>
+                  <button className="mobile-profile-option danger" onClick={handleLogout}>
+                    <LogOut size={15} /> Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="mobile-auth-buttons">
+                <Link to="/login" className="btn-auth-outline" onClick={() => setMobileMenuOpen(false)}>Sign In</Link>
+                <Link to="/signup" className="btn-upload" onClick={() => setMobileMenuOpen(false)}>
+                  <UserCircle size={15} />
+                  <span>Sign Up</span>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </nav>
   );
 }

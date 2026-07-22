@@ -1,10 +1,19 @@
 import { useEffect, useCallback } from 'react';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { triggerDirectDownload } from '../utils/downloadUtils';
 
 export default function Lightbox({ images, index, onClose, onNavigate }) {
+  const { incrementDownload } = useApp();
   const image = images[index];
   const hasPrev = index > 0;
   const hasNext = index < images.length - 1;
+
+  const handleDownload = async () => {
+    if (!image) return;
+    await triggerDirectDownload(image.url, image.title);
+    incrementDownload();
+  };
 
   // Lock body scroll
   useEffect(() => {
@@ -67,9 +76,32 @@ export default function Lightbox({ images, index, onClose, onNavigate }) {
           alt={image.title}
           draggable={false}
         />
-        <div className="lightbox-info">
-          <p className="lightbox-title">{image.title}</p>
-          <p className="lightbox-meta">{image.category} · by {image.author}</p>
+        <div className="lightbox-info flex items-center justify-between">
+          <div>
+            <p className="lightbox-title">{image.title}</p>
+            <p className="lightbox-meta">{image.category} · by {image.author}</p>
+          </div>
+          <button
+            className="action-btn download-btn-lightbox"
+            onClick={handleDownload}
+            aria-label={`Download ${image.title}`}
+            title="Download image"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '8px 14px',
+              borderRadius: '8px',
+              backgroundColor: 'var(--accent, #6366f1)',
+              color: '#fff',
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 500
+            }}
+          >
+            <Download size={16} />
+            <span>Download</span>
+          </button>
         </div>
       </div>
     </div>

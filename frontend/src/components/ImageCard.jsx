@@ -1,6 +1,7 @@
 import { Heart, Download, Eye, Trash2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useAuth } from '../context/AuthContext';
+import { triggerDirectDownload } from '../utils/downloadUtils';
 
 export default function ImageCard({ image, isSaved, onSave, onView, onDelete }) {
   const { addToWishlist, removeFromWishlist, wishlist, incrementDownload } = useApp();
@@ -19,22 +20,10 @@ export default function ImageCard({ image, isSaved, onSave, onView, onDelete }) 
     else              addToWishlist(image);
   };
 
-  const handleDownload = (e) => {
+  const handleDownload = async (e) => {
     e.stopPropagation();
     e.preventDefault();
-    // Derive extension from URL or default to jpg
-    const urlPath = image.url.split('?')[0];
-    const ext = urlPath.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i)?.[1] || 'jpg';
-    const filename = `${image.title.replace(/\s+/g, '-').toLowerCase()}.${ext}`;
-
-    const link = document.createElement('a');
-    link.href = image.url;
-    link.download = filename;
-    link.target = '_blank';
-    link.rel = 'noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    await triggerDirectDownload(image.url, image.title);
     incrementDownload();
   };
 
